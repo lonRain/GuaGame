@@ -16,52 +16,93 @@
 
 <script type="text/javascript">
     var log = console.log.bind(console)
-    var canvas = document.getElementById('canvas')
-    var context = canvas.getContext('2d')
-    var x = 0
-    var y = 0
-    var left_state = false
-    var right_state = false
-    var img = new Image()
-    img.src = 'paddle.png'
-    log(img)
-    img.onload = function() {
-        context.drawImage(img, x, y)
+    var image_frome_path = function(path){
+      var img = new Image()
+      img.src = path
+      return img
     }
-    
-    // control
-    window.addEventListener('keydown', function(event) {
-        log(event)
+    var Paddle = function(){
+      var image = image_frome_path('paddle.png')
+      var paddle = {
+        image: image,
+        x: 100,
+        y: 300,
+        speed: 5,
+      }
+      paddle.move_left = function(){
+        paddle.x -= paddle.speed
+      }
+      paddle.move_right = function(){
+        paddle.x += paddle.speed
+      }
+      return paddle
+    }
+    var Scene = function(){
+      var game = {}
+      var canvas = document.getElementById('canvas')
+      var context = canvas.getContext('2d')
+      game.canvas = canvas
+      game.context = context
 
-        var key = event.key
-        if(key == 'a') {
-            left_state = true
-        } else if(key == 'd') {
-            right_state = true
-        }
-    })
-
-    window.addEventListener('keyup', function(event) {
-        
-        var key = event.key
-        if(key == 'a') {
-            left_state = false
-        } else if(key == 'd') {
-            right_state = false
-        }
-    })
-    setInterval(function() {
-        // update x and y
-        if(left_state == true){
-            x -= 10
-        } else if (right_state == true) {
-            x += 10
-        }
+      setInterval(function(){
+        // update
+        game.update()
+        // clear
+        game.context.clearRect(0, 0, game.canvas.width, game.canvas.height)
         // draw
-            context.clearRect(0, 0, canvas.width, canvas.height)
-            context.drawImage(img, x, y)
-    }, 1000/30)
+        game.draw()
 
+      }, 1000/30)
+
+      return game
+    }
+
+
+    var __main = function(){
+      var game = Scene()
+
+
+      var left_state = false
+      var right_state = false
+      var paddle = Paddle()
+      // control
+      window.addEventListener('keydown', function(event) {
+          log(event)
+
+          var key = event.key
+          if(key == 'a') {
+              left_state = true
+          } else if(key == 'd') {
+              right_state = true
+          }
+      })
+
+      window.addEventListener('keyup', function(event) {
+
+          var key = event.key
+          if(key == 'a') {
+              left_state = false
+          } else if(key == 'd') {
+              right_state = false
+          }
+      })
+
+      game.update = function(){
+        //update
+        if(left_state){
+          paddle.move_left()
+        } else if(right_state){
+          paddle.move_right()
+        }
+      }
+
+      game.draw = function(){
+        // draw
+        game.context.drawImage(paddle.image, paddle.x, paddle.y)
+      }
+
+    }
+    __main()
 </script>
   </body>
 </html>
