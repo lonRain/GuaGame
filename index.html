@@ -38,67 +38,69 @@
       return paddle
     }
     var Scene = function(){
-      var game = {}
+      var scene = {
+          actions: {},
+          keydowns: {},
+      }
       var canvas = document.getElementById('canvas')
       var context = canvas.getContext('2d')
-      game.canvas = canvas
-      game.context = context
+      scene.canvas = canvas
+      scene.context = context
+      window.addEventListener('keydown', function(event){
+          scene.keydowns[event.key] = true
+      })
 
+      window.addEventListener('keyup', function(event){
+          scene.keydowns[event.key] = false
+      })
+
+      scene.register_action = function(key, callback){
+          scene.actions[key] = callback
+      }
+      scene.draw_image = function(content){
+          scene.context.drawImage(content.image, content.x, content.y)
+      }
       setInterval(function(){
+        // events
+        var actions = Object.keys(scene.actions)
+        for(var i = 0; i < actions.length; i++){
+            var key = actions[i]
+            if(scene.keydowns[key]){
+                // if keydown, call event that have been registered.
+                scene.actions[key]()
+            }
+        }
         // update
-        game.update()
+        scene.update()
         // clear
-        game.context.clearRect(0, 0, game.canvas.width, game.canvas.height)
+        scene.context.clearRect(0, 0, scene.canvas.width, scene.canvas.height)
         // draw
-        game.draw()
+        scene.draw()
 
-      }, 1000/30)
+      }, 1000/60)
 
-      return game
+      return scene
     }
 
 
     var __main = function(){
-      var game = Scene()
-
-
-      var left_state = false
-      var right_state = false
+      var scene = Scene()
       var paddle = Paddle()
-      // control
-      window.addEventListener('keydown', function(event) {
-          log(event)
-
-          var key = event.key
-          if(key == 'a') {
-              left_state = true
-          } else if(key == 'd') {
-              right_state = true
-          }
+      // var ball = Ball()
+      scene.register_action('a', function(){
+        paddle.move_left()
       })
-
-      window.addEventListener('keyup', function(event) {
-
-          var key = event.key
-          if(key == 'a') {
-              left_state = false
-          } else if(key == 'd') {
-              right_state = false
-          }
+      scene.register_action('d', function(){
+        paddle.move_right()
       })
-
-      game.update = function(){
+      scene.update = function(){
         //update
-        if(left_state){
-          paddle.move_left()
-        } else if(right_state){
-          paddle.move_right()
-        }
       }
-
-      game.draw = function(){
+      log(scene.keydowns)
+      log(scene.actions)
+      scene.draw = function(){
         // draw
-        game.context.drawImage(paddle.image, paddle.x, paddle.y)
+        scene.draw_image(paddle)
       }
 
     }
